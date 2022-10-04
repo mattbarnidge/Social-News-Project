@@ -1,7 +1,7 @@
 #Libraries, Working Directory, and Data
 library(dplyr)
 library(tidyr)
-setwd("~/Desktop")
+setwd("~/Documents/GitHub/Social-News-Project/Social News Project/Social News")
 d <- read.csv(file = "Social News Text Clean.csv", header = TRUE, sep = ",")
 
 #Bookkeeping Variables
@@ -141,18 +141,20 @@ d$filt <- ifelse(d$fb.acct == 1 & is.na(d$filt)==TRUE, 0, d$filt)
 
 #Name: Need to clean these
 d$name1 <- 0
-d$name1 = ifelse(d$C15!="", 1, d$name1)
+d$name1 = ifelse(d$Name_1==1, 1, d$name1)
 d$name1 = ifelse(d$filt==0, 0, d$name1)
 
 d$name2 <- 0
-d$name2 = ifelse(d$C22!="", 1, d$name2)
+d$name2 = ifelse(d$Name_2==1, 1, d$name2)
 d$name2 = ifelse(d$filt==0, 0, d$name2)
 
 d$name3 <- 0
-d$name3 = ifelse(d$C29!="", 1, d$name3)
+d$name3 = ifelse(d$Name.3==1, 1, d$name3)
 d$name3 = ifelse(d$filt==0, 0, d$name3)
 
 d$names = with(d, rowSums(cbind(name1, name2, name3), na.rm=TRUE))
+d$names.bin[d$names > 0] <- 1
+d$names.bin[d$names == 0] <- 0
 
 #Category: Family
 d$ng1.fam[d$C16=="Family member"] <- 1
@@ -520,8 +522,9 @@ d$ng.clo = rowMeans(cbind(d[,86], d[,100], d[,114]), na.rm=TRUE)
 d$ng.clo[d$filt!=1] <- NA
 
 #Correlations
-with(d, cor(cbind(ng.fam, ng.fri, ng.cow, ng.acq, ng.nei, 
-                  ng.engage, ng.agree, ng.sim, ng.lik, ng.clo), 
+with(d, cor(cbind(ng.fam, ng.fri, ng.cow, ng.acq, ng.nei), 
+            use="complete.obs", method="pearson"))
+with(d, cor(cbind(ng.engage, ng.agree, ng.sim, ng.lik, ng.clo), 
             use="complete.obs", method="pearson"))
 
 #Section D: Social Networks
