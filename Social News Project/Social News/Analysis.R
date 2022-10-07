@@ -1,3 +1,8 @@
+#Load Data
+setwd("~/Documents/GitHub/Social-News-Project/Social News Project/Social News")
+load("socnews.Rdata")
+load("long.Rdata")
+
 #MLM
 library(lme4)
 library(lmerTest)
