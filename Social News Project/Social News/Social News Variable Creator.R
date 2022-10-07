@@ -408,7 +408,7 @@ d$ng1.nei[d$C16_6_TEXT=="All people on Facebook" |
 d$ng2.nei[d$C23=="Neighbor"] <- 1
 d$ng2.nei[d$C23!="Neighbor"] <- 0
 d$ng2.nei[d$C23==""] <- NA
-d$ng2.acq[d$C23_6_TEXT=="Do not see political posts" | 
+d$ng2.nei[d$C23_6_TEXT=="Do not see political posts" | 
             d$C23_6_TEXT=="FB " | 
             d$C23_6_TEXT=="leader" | 
             d$C23_6_TEXT=="no one" | 
