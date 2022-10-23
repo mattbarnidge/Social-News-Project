@@ -77,9 +77,6 @@ x.clo <- x.clo %>% rename(ng1 = ng1.clo, ng2 = ng2.clo, ng3 = ng3.clo)
 #Cbind reg vars onto last dataframe
 x.clo.plus <- cbind(x.clo, reg.vars)
 
-#Clean up
-rm(x, d) 
-
 #Put data into long form
 long.st <- gather(x.st, ng, st, ng1:ng3, factor_key = TRUE)
 long.engage <- gather(x.engage, ng, engage, ng1:ng3, factor_key = TRUE)
@@ -107,31 +104,11 @@ with(long, (cor(cbind(st, engage.x, agree, sim, lik, clo),
                 use="complete.obs")))
 
 #Save Data
+save(x, file="sub.Rdata")
 save(long, file="long.Rdata")
-rm(long)
+rm(long, x, d)
 
-#MLM
-library(lme4)
-library(lmerTest)
-library(sjstats)
 
-m1 = lmer(sim ~ agree + (1 + agree | ID), data=long, 
-          control=lmerControl(optimizer="bobyqa",
-                              optCtrl=list(maxfun=2e5)))
-m2 = lmer(lik ~ agree + (1 + agree | ID), data=long, 
-          control=lmerControl(optimizer="bobyqa",
-                              optCtrl=list(maxfun=2e5)))
-m3 = lmer(clo ~ agree + (1 + agree | ID), data=long, 
-          control=lmerControl(optimizer="bobyqa",
-                              optCtrl=list(maxfun=2e5)))
-
-icc(m1)
-icc(m2)
-icc(m3)
-
-summary(m1, cor=FALSE)
-summary(m2, cor=FALSE)
-summary(m3, cor=FALSE)
 
 
 
