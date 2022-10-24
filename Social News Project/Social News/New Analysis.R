@@ -9,6 +9,7 @@ library(lme4)
 library(lmerTest)
 library(ggplot2)
 library(dotwhisker)
+library(grid)
 library(gridExtra)
 library(sjPlot)
 
@@ -31,10 +32,29 @@ prop.test(634, 998)
 
 #Visualizations
 p1 <- ggplot(x, aes(x = cce)) + 
-  geom_histogram(colour = 1, fill = "white", bins = 5)
+  geom_histogram(aes(y = ..density..), 
+                 colour = 1, fill = "white", bins = 5) + 
+  geom_density(adjust=5) + 
+  ylim(0,.5) +
+  xlab("General Measure") + 
+  ylab("Density")
+p1 + geom_vline(aes(xintercept=mean(cce)),
+                color="black", linetype="dashed", size=.5)
 
 p2 <- ggplot(long, aes(x = cce)) + 
-  geom_histogram(colour = 1, fill = "white", bins = 5)
+  geom_histogram(aes(y = ..density..), 
+                 colour = 1, fill = "white", bins = 5) + 
+  geom_density(adjust=5) + 
+  ylim(0,.5) +
+  xlab("Name Generator Measure") + 
+  ylab("")
+p2 + geom_vline(aes(xintercept=mean(cce, na.rm=TRUE)),
+                color="black", linetype="dashed", size=.5)
+
+grid.arrange(p1,p2, ncol=2, nrow=1, 
+             top=textGrob("Density Histograms of Cross-Cutting Exposure Measures"))
+
+
 
 #RQ2: Relationship with Y
 m1 = lm(soccon ~ age + gender + poc + edu + inc + fb.freq + netsize + netdiv2 + cce, data=x)
