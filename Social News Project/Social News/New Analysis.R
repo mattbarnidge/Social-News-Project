@@ -12,6 +12,7 @@ library(dotwhisker)
 library(grid)
 library(gridExtra)
 library(sjPlot)
+library(dplyr)
 
 #Make CCE vars
 x$cce <- x$fbnews.dis-x$fbnews.agr
@@ -30,7 +31,7 @@ t.test(x$cce, mu=0)
 t.test(long$cce, mu=0)
 prop.test(634, 998)
 
-#Visualizations
+#Visualization
 p1 <- ggplot(x, aes(x = cce)) + 
   geom_histogram(aes(y = ..density..), 
                  colour = 1, fill = "white", bins = 5) + 
@@ -54,7 +55,21 @@ p2 + geom_vline(aes(xintercept=mean(cce, na.rm=TRUE)),
 grid.arrange(p1,p2, ncol=2, nrow=1, 
              top=textGrob("Density Histograms of Cross-Cutting Exposure Measures"))
 
+#Second visualization
+df <- data.frame(x = c("LME", "NEU", "CCE"), y = c(319, 161, 634), sd=c(17.86057, 12.68858, 25.17936)) 
+df$x <- factor(df$x, levels = c("LME", "NEU", "CCE"))
+p3 <- ggplot(data=df, aes(x=x, y=y)) + 
+  geom_bar(stat="identity", width=.5) + 
+  geom_errorbar(aes(ymin=y-sd,
+                    ymax=y+sd),
+                width=.2) + 
+  xlab("Exposure Type") + 
+  ylab("No. of Cases") 
+p3 + coord_flip()
 
+geom_errorbar(aes(ymin=value-standard_error,
+                  ymax=value+standard_error),
+              width=.2)
 
 #RQ2: Relationship with Y
 m1 = lm(soccon ~ age + gender + poc + edu + inc + fb.freq + netsize + netdiv2 + cce, data=x)
@@ -72,39 +87,37 @@ summary(m5, cor=F)
 summary(m6, cor=F)
 
 #Visualizations
-#Overlay Plot
-dwplot(list(wm.fb, wm.wa), 
-       show_intercept = TRUE, 
-       vline = geom_vline(
-         xintercept = 0, 
-         colour = "grey60", 
-         linetype = 2), 
-       vars_order = c("fb.freq.c", "wa.freq.c", 
-                      "age.c", "gen.c", "edu.c", "inc.c", "wmz.c", 
-                      "pol.int.c", "liber.c", "eff.int.c", "news.c",
-                      "sec.c", "trust.c", "eff.ext.c", 
-                      "com.index.c", "pol.index.c", 
-                      "com.g", "pol.g", "fb.g", "wa.g", 
-                      "SD (Intercept)", 
-                      "SD (Observations)"),
-       model_order = c("Model 1", "Model 2")
+p4 <- dwplot(list(m1, m2, m3, m4, m5, m6), 
+             show_intercept = TRUE, 
+             vline = geom_vline(
+               xintercept = 0, 
+               colour = "grey60", 
+               linetype = 2), 
+             vars_order = c("age", "gender", "poc", "edu", "inc", 
+                            "fb.freq", "netsize", "netdiv2", 
+                            "cce", 
+                            "SD (Intercept)"), 
+             model_order = c("Model 1", "Model 2", "Model 3", 
+                             "Model 4", "Model 5", "Model 6")
 ) %>% 
   relabel_predictors(
-    c(fb.freq.c = "Facebook Frequency", wa.freq.c = "WhatsApp Frequency",
-      age.c = "Age", gen.c = "Gender", edu.c = "Education", inc.c = "Income", wmz.c = "Race",
-      pol.int.c = "Political Interest", liber.c = "Liberalism", eff.int.c = "Internal Efficacy", news.c = "News use",
-      sec.c = "Perceived Security", trust.c = "Trust in Institutions", eff.ext.c = "External Efficacy", 
-      com.index.c = "Community Engagement", pol.index.c = "Political Participation", 
-      com.g = "Contextual Community", pol.g = "Contextual Political", 
-      fb.g = "Contextual Facebook", wa.g = "Contextual WhatsApp"
-    )
-  ) + 
+    c(age = "Age", gender = "Gender", poc = "Race", edu = "Education", inc = "Income",
+      fb.freq = "Facebook Frequency", netsize = "Network Size", netdiv2 = "Network Diversity", 
+      cce = "Cross-Cutting Exposure")
+  ) 
+p4 + labs(x = "Effect Size", colour = "Model")
+p4 + theme_light() + 
   theme(legend.title = element_blank()) +
-  scale_colour_grey(labels = c("WhatsApp", "Facebook"),
-                    start = 0.25,
-                    end = 0.50) + 
-  xlab("Effect Size") + 
-  ylab("Predictor")
+  scale_colour_grey(labels = c("Closeness", 
+                               "Liking", 
+                               "Perceived Similarity",
+                               "Social Trust", 
+                               "Community Belongingness", 
+                               "Social Connectedness"), 
+                    start = 0.2,
+                    end = 0.8, 
+                    aesthetics = "colour") + 
+  xlab("Effect Size") 
 
 #RQ3: Relationship with engagement?
 with(x, cor(cce, engage, use="complete.obs")) #weak negative correlation
@@ -116,8 +129,13 @@ summary(fit)
 TukeyHSD(fit)
 
 #Visualization
-ggplot(long, aes(as.factor(agr), engage.x)) + 
-  geom_boxplot()
+p5 <- ggplot(data=subset(long, !is.na(agr)), 
+             aes(as.factor(agr), engage.x)) + 
+  geom_boxplot(notch=TRUE, fill='#A4A4A4', color="black") + 
+  labs(x="Exposure Type", y = "Engagement") + 
+  scale_x_discrete(labels = c('CCE','NEU','LME'))
+p5 + coord_flip()
+p5 + stat_summary(fun=mean, geom="point", shape=23, size=4)
 
 #RQ4: Interaction with engagement?
 i1 = lm(soccon ~ age + gender + poc + edu + inc + fb.freq + netsize + netdiv2 + cce*engage, data=x)
@@ -134,8 +152,14 @@ summary(i4, cor=F)
 summary(i5, cor=F)
 summary(i6, cor=F)
 
-#Visualization
-vissreg::visreg(i3, "cce", by="engage")
-vissreg::visreg(i4, "cce", by="engage.x")
+#Visualizations
+x$engage <- cut(x$engage, 3, labels=c("Low", "Med", "High"))
+i3.f = lm(soctrust ~ age + gender + poc + edu + inc + fb.freq + netsize + netdiv2 + cce*engage, data=x)
+visreg::visreg(i3.f, "cce", by="engage", jitter=TRUE, line=list(col="black"), 
+               xlab="Cross-Cutting Exposure", ylab="Social Trust")
 
+long$engage.x <- cut(long$engage.x, 3, labels=c("Low", "Med", "High"))
+i4.f = lmer(sim ~ age + gender + poc + edu + inc + fb.freq + netsize + netdiv2 + cce*engage.x + (1 | ID), data=long, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+visreg::visreg(i4.f, "cce", by="engage.x", jitter=TRUE, line=list(col="black"), 
+               xlab="Cross-Cutting Exposure", ylab="Perceived Similarity")
 
