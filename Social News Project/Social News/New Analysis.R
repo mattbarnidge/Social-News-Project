@@ -38,8 +38,8 @@ p1 <- ggplot(x, aes(x = cce)) +
   geom_density(adjust=5) + 
   ylim(0,.5) +
   xlab("General Measure") + 
-  ylab("Density")
-p1 + geom_vline(aes(xintercept=mean(cce)),
+  ylab("Density") + 
+  geom_vline(aes(xintercept=mean(cce)),
                 color="black", linetype="dashed", size=.5)
 
 p2 <- ggplot(long, aes(x = cce)) + 
@@ -48,16 +48,16 @@ p2 <- ggplot(long, aes(x = cce)) +
   geom_density(adjust=5) + 
   ylim(0,.5) +
   xlab("Name Generator Measure") + 
-  ylab("")
-p2 + geom_vline(aes(xintercept=mean(cce, na.rm=TRUE)),
+  ylab("") + 
+  geom_vline(aes(xintercept=mean(cce, na.rm=TRUE)),
                 color="black", linetype="dashed", size=.5)
 
 grid.arrange(p1,p2, ncol=2, nrow=1, 
              top=textGrob("Density Histograms of Cross-Cutting Exposure Measures"))
 
 #Second visualization
-df <- data.frame(x = c("LME", "NEU", "CCE"), y = c(319, 161, 634), sd=c(17.86057, 12.68858, 25.17936)) 
-df$x <- factor(df$x, levels = c("LME", "NEU", "CCE"))
+df <- data.frame(x = c("CCE", "NEU", "LME"), y = c(319, 161, 634), sd=c(17.86057, 12.68858, 25.17936)) 
+df$x <- factor(df$x, levels = c("CCE", "NEU", "LME"))
 p3 <- ggplot(data=df, aes(x=x, y=y)) + 
   geom_bar(stat="identity", width=.5) + 
   geom_errorbar(aes(ymin=y-sd,
